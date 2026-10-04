@@ -1,0 +1,39 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ist/
+temp_zip/
+temp_pack/
+scratch/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+# Backup & temporary files
+*.bak
+*.old
+*.orig
+*.log
+*.tmp
+.local.*
+.env
+.env.*
+*.dll
+*.pdb
+*.zip
+*.exe
+*.bundle
+*.mp4
+
+# Unity / OS files
+.DS_Store
+Thumbs.db

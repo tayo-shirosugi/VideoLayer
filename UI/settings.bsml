@@ -1,0 +1,20 @@
+<vertical>
+    <horizontal>
+        <text text="Enable" />
+        <button text="~enableButtonText" on-click="toggleEnable" />
+    </horizontal>
+
+    <horizontal>
+        <text text="Back Video Distance (m)" />
+        <button text="-" on-click="decBack" />
+        <text text="~backDistanceText" align="Center" />
+        <button text="+" on-click="incBack" />
+    </horizontal>
+
+    <horizontal>
+        <text text="Front Video Distance (m)" />
+        <button text="-" on-click="decFront" />
+        <text text="~frontDistanceText" align="Center" />
+        <button text="+" on-click="incFront" />
+    </horizontal>
+</vertical>
