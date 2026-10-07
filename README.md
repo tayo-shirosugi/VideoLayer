@@ -42,9 +42,13 @@ HMDには動画を表示せず、検出した三人称カメラだけに表示�
 
 ### 背景の透過
 
-`ChromaKey`は黒背景を透明にする描画モードです。黒だけでなく、圧縮などでわずかに明るくなった黒も透過し、境界を滑らかにします。動画に映る黒い物体も透明になるため、黒色を残したい動画では`GreenKey`または`Opaque`を使ってください。
+`ChromaKey`は黒背景を透明にする描画モードです。白文字や明るい図形の縁に混ざった黒を取り除き、明るさから透明度を復元します。圧縮で浮いた黒も除去します。黒い物体は透明になり、暗い灰色や暗い色も半透明になるため、それらを残したい動画では`GreenKey`または`Opaque`を使ってください。
 
-`GreenKey`は、緑背景（`#00FF00`）の文字PV向けの描画モードです。背景の緑を透過し、文字の縁に残る緑を抑えます。黒い文字も表示できますが、文字や図形の緑色も透過・補正の対象になります。動画の背景色に合わせて、`FrontBlendMode`や`BackBlendMode`を`GreenKey`に変更してください。初期値は黒背景用の`ChromaKey`です。
+`GreenKey`は緑背景の文字PV向けの描画モードです。背景の緑を差し引いて文字の色と透明度を復元し、色付き文字の縁は周囲の画素も使って補正します。黒い文字も表示できます。背景色の初期値は`#00FF00`で、異なる緑には`GreenKeyColor`を指定します。文字や図形の緑色も透過・補正の対象になります。動画の背景色に合わせて、`FrontBlendMode`や`BackBlendMode`を`GreenKey`に変更してください。初期値は黒背景用の`ChromaKey`です。
+
+両モードとも、画素ごとの透過処理を済ませてから拡大・縮小時の色を混ぜます。これにより、文字の縁に背景色が残るのを抑えます。ゲームの色空間に合わせて色を変換し、透明度の調整は薄いノイズ部分に限定します。
+
+元動画にあるぼけや圧縮で失われた色・輪郭は完全には復元できません。緑背景上の薄い色付き文字は、周囲にも元の文字色が残っていないと、背景との混ざりを正確に判別できない場合があります。
 
 `PureAdditive`は加算描画を行います。
 
@@ -63,6 +67,13 @@ HMDには動画を表示せず、検出した三人称カメラだけに表示�
 | `SyncThresholdSeconds` | `0.1` | 楽曲と動画の時間のずれをシークで補正するしきい値（秒） |
 | `PauseDetectionSeconds` | `0.12` | 楽曲の再生時間が止まったと判定するまでの時間（秒） |
 | `FrontBlendMode` / `BackBlendMode` | `ChromaKey` | 描画モード。`ChromaKey`は黒背景透過、`GreenKey`は緑背景透過、`Opaque`は不透明、`PureAdditive`は加算描画 |
+| `BlackKeyThreshold` | `0.02` | 黒背景のノイズを消すしきい値。大きくすると薄い文字やフェードも消えやすくなります。範囲は0〜0.5 |
+| `BlackKeySoftness` | `0.02` | 黒のしきい値から滑らかに表示へ移る幅。範囲は0.0001〜0.5 |
+| `BlackKeyWhiteLevel` | `1.0` | 黒背景上で不透明と扱う明るさ。暗い文字を残す場合は小さくします。範囲は0.01〜1 |
+| `GreenKeyColor` | `#00FF00` | 緑背景の色。`#RRGGBB`形式で指定します。緑成分が赤・青より十分に強い色を使ってください |
+| `GreenKeyTolerance` | `0.03` | 緑背景に残る薄いノイズを消すしきい値。大きくすると薄い文字やフェードも消えやすくなります。範囲は0〜0.5 |
+| `GreenKeySoftness` | `0.03` | 緑のしきい値から滑らかに表示へ移る幅。範囲は0.0001〜0.5 |
+| `GreenKeyEdgeRecovery` | `true` | 周囲の画素から色付き文字の縁を補正します。`false`にすると描画負荷を抑えられますが、色付き文字の縁に緑が残りやすくなります |
 | `FrontRenderQueue` / `BackRenderQueue` | `3999` / `2499` | 描画順 |
 | `RenderWidth` / `RenderHeight` | `1920` / `1080` | 初期描画解像度 |
 | `MaxRenderWidth` / `MaxRenderHeight` | `1920` / `1080` | RenderTextureの解像度の上限。動画デコーダー自体のメモリ使用量は制限しません |
@@ -70,6 +81,8 @@ HMDには動画を表示せず、検出した三人称カメラだけに表示�
 | `DebugLog` | `false` | 詳細ログとデバッグキー |
 
 動画の表示中は、表示先以外のカメラから`CameraOnlyLayer`を見えなくします。同じレイヤーにある他のMODのオブジェクトも見えなくなるため、他のMODが使っていないレイヤーを指定してください。
+
+透過の調整項目は全体設定で、前面・背景の両動画に適用します。まず初期値で確認し、黒のにじみが残る場合は`BlackKeyThreshold`、緑の薄い残りがある場合は`GreenKeyTolerance`を少しずつ上げてください。細い線やフェードが消える場合は下げます。緑背景の色が初期値と違う場合は、先に`GreenKeyColor`を合わせてください。
 
 曲ごとに設定を変える場合は、曲フォルダの`videolayer.json`に記述します。変更できるのは、`backOffsetMeters`、`frontDistanceMeters`、`frontBlendMode`、`backBlendMode`の4項目だけです。この4項目のうち書かなかったものには、全体設定の値が使われます。
 
@@ -98,7 +111,7 @@ HMDには動画を表示せず、検出した三人称カメラだけに表示�
 
 ```text
 bin/Release/net472/VideoLayer.dll
-dist/VideoLayer-v0.1.0.zip
+dist/VideoLayer-v0.1.1.zip
 ```
 
 ZIPにはプラグインDLLとMITライセンスが含まれます。通常のビルドでは、DLLをゲームのフォルダにコピーしません。ビルドと同時にインストールする場合は、`-Install`を付けて実行します。ゲームが起動中の場合は、先に終了してください。
@@ -107,7 +120,13 @@ ZIPにはプラグインDLLとMITライセンスが含まれます。通常の�
 .\build.ps1 -BeatSaberDir '<Beat Saberのインストールフォルダ>' -Install
 ```
 
-シェーダーを変更した場合は、ライセンス認証済みのUnity 2022.3 Editorで`.\build-shaders.ps1`を実行してください。WindowsのDirect3D 11向けのAssetBundleを生成し、GPUで描画結果を検証します。通常のビルドとCIでは生成済みのバンドルを使うため、Unity Editorをダウンロードしません。
+シェーダーを変更した場合は、ライセンス認証済みのUnity 2022.3 Editorで`.\build-shaders.ps1`を実行してください。WindowsのDirect3D 11向けのAssetBundleを生成し、黒・緑背景の透過、半透明の文字、色付き文字の縁、拡大時の補間、色空間の変換、Bloom用マスクをGPUで検証します。通常のビルドとCIでは生成済みのバンドルを使うため、Unity Editorをダウンロードしません。
+
+DLLに埋め込んだバンドルも、実際のプラグインの読み込み処理を通して同じ描画検証を実行できます。
+
+```powershell
+.\build-shaders.ps1 -VerifyPlugin '.\bin\Release\net472\VideoLayer.dll'
+```
 
 `build.bat`にも同じ引数を渡せます。`.\package.ps1`では、作成済みのDLLからZIPを作り直せます。
 

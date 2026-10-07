@@ -60,7 +60,7 @@ namespace VideoLayer
             var go = new GameObject("VideoLayerController");
             Object.DontDestroyOnLoad(go);
             Controller = go.AddComponent<VideoLayerController>();
-            Log.Info("VideoLayer 0.1.0 started");
+            Log.Info("VideoLayer 0.1.1 started");
 
             UI.SettingsController.Initialize();
         }

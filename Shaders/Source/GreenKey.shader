@@ -3,7 +3,11 @@ Shader "VideoLayer/GreenKey"
     Properties
     {
         _MainTex ("Video", 2D) = "white" {}
-        _GreenTolerance ("Green background tolerance", Range(0, 0.5)) = 0.05
+        _GreenTolerance ("Green noise floor", Range(0, 0.5)) = 0.03
+        _GreenSoftness ("Green noise transition", Range(0, 0.5)) = 0.03
+        _GreenScreenColor ("Green screen RGB (sRGB)", Vector) = (0, 1, 0, 0)
+        [Toggle] _GreenEdgeRecovery ("Recover colored text edges", Float) = 1
+        [HideInInspector] _KeyInLinearSpace ("Linear input", Float) = 0
     }
     SubShader
     {
@@ -12,7 +16,7 @@ Shader "VideoLayer/GreenKey"
         ZWrite Off
         ZTest LEqual
         // Video opacity blends color but does not create a screen Bloom mask.
-        Blend SrcAlpha OneMinusSrcAlpha, Zero OneMinusSrcAlpha
+        Blend One OneMinusSrcAlpha, Zero OneMinusSrcAlpha
         Pass
         {
             CGPROGRAM

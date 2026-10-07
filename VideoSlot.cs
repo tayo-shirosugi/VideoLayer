@@ -118,7 +118,9 @@ namespace VideoLayer
                 name = $"VideoLayer.{Name}.RT",
                 useMipMap = false,
                 autoGenerateMips = false,
-                anisoLevel = 1
+                anisoLevel = 1,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
             };
             _renderTexture.Create();
 
@@ -153,8 +155,26 @@ namespace VideoLayer
             if (mat.HasProperty("_KeyColor")) mat.SetColor("_KeyColor", Color.black);
             if (mat.HasProperty("_ColorKey")) mat.SetColor("_ColorKey", Color.black);
             if (mat.HasProperty("_ChromaColor")) mat.SetColor("_ChromaColor", Color.black);
-            if (mat.HasProperty("_Threshold")) mat.SetFloat("_Threshold", 0.05f);
-            if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", 0.05f);
+            var config = Plugin.Config;
+            if (mat.HasProperty("_Threshold")) mat.SetFloat("_Threshold", KeySetting(config?.BlackKeyThreshold ?? 0.02f, 0.02f, 0, 0.5f));
+            if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", KeySetting(config?.BlackKeySoftness ?? 0.02f, 0.02f, 0.0001f, 0.5f));
+            if (mat.HasProperty("_WhiteLevel")) mat.SetFloat("_WhiteLevel", KeySetting(config?.BlackKeyWhiteLevel ?? 1, 1, 0.01f, 1));
+            if (mat.HasProperty("_GreenTolerance")) mat.SetFloat("_GreenTolerance", KeySetting(config?.GreenKeyTolerance ?? 0.03f, 0.03f, 0, 0.5f));
+            if (mat.HasProperty("_GreenSoftness")) mat.SetFloat("_GreenSoftness", KeySetting(config?.GreenKeySoftness ?? 0.03f, 0.03f, 0.0001f, 0.5f));
+            if (mat.HasProperty("_GreenEdgeRecovery")) mat.SetFloat("_GreenEdgeRecovery", config?.GreenKeyEdgeRecovery == false ? 0 : 1);
+            if (mat.HasProperty("_KeyInLinearSpace")) mat.SetFloat("_KeyInLinearSpace", QualitySettings.activeColorSpace == ColorSpace.Linear ? 1 : 0);
+            if (mat.HasProperty("_GreenScreenColor"))
+            {
+                var key = Color.green;
+                if (!ColorUtility.TryParseHtmlString(config?.GreenKeyColor ?? "#00FF00", out key) ||
+                    key.g - Mathf.Max(key.r, key.b) < 0.05f)
+                {
+                    key = Color.green;
+                    Plugin.Log.Warn("GreenKeyColor must be a green-dominant HTML color; using #00FF00.");
+                }
+                // SetVector keeps these display RGB values out of Unity's color conversion.
+                mat.SetVector("_GreenScreenColor", new Vector4(key.r, key.g, key.b, 0));
+            }
             if (mat.HasProperty("_Range")) mat.SetFloat("_Range", 0.1f);
 
             if (Material != null) UnityEngine.Object.Destroy(Material);
@@ -163,6 +183,11 @@ namespace VideoLayer
             BindTextureToMaterial();
 
             Plugin.Log.Info($"[{Name}] Applied shader '{shader.name}' (queue={renderQueue})");
+        }
+
+        private static float KeySetting(float value, float fallback, float min, float max)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value) ? fallback : Mathf.Clamp(value, min, max);
         }
 
         public void Load(string filePath)

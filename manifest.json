@@ -3,7 +3,7 @@
   "id": "VideoLayer",
   "name": "VideoLayer",
   "author": "tayo-shirosugi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Displays front/back video layers synced with Beat Saber song time and CameraPlus / Camera2.",
   "gameVersion": "1.44.1",
   "dependsOn": {

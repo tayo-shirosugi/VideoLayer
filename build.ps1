@@ -79,6 +79,14 @@ if ($hasSdk) {
     $sourceFiles = @(Get-ChildItem -LiteralPath $Root -Filter "*.cs" -File) +
         @(Get-ChildItem -LiteralPath (Join-Path $Root "Patches") -Filter "*.cs" -File) +
         @(Get-ChildItem -LiteralPath (Join-Path $Root "UI") -Filter "*.cs" -File)
+    # Direct Roslyn compilation does not generate the SDK's assembly metadata.
+    $assemblyVersion = ($manifestData.version -split '-')[0] + '.0'
+    $assemblyInfoPath = Join-Path $binDir 'VideoLayer.AssemblyInfo.cs'
+    @(
+        ('[assembly: System.Reflection.AssemblyVersion("{0}")]' -f $assemblyVersion),
+        ('[assembly: System.Reflection.AssemblyFileVersion("{0}")]' -f $assemblyVersion),
+        ('[assembly: System.Reflection.AssemblyInformationalVersion("{0}")]' -f $manifestData.version)
+    ) | Set-Content -LiteralPath $assemblyInfoPath -Encoding UTF8
     $compilerArgs = @($compiler, "/target:library", "/langversion:latest", "/out:$dll",
         "/resource:$manifest,VideoLayer.manifest.json",
         "/resource:$(Join-Path $Root 'UI\settings.bsml'),VideoLayer.UI.settings.bsml",
@@ -87,6 +95,7 @@ if ($hasSdk) {
     $compilerArgs += @($referencePaths | ForEach-Object { "/r:$_" })
     $compilerArgs += @("mscorlib", "System", "System.Core", "netstandard" | ForEach-Object { "/r:$(Join-Path $managed "$_.dll")" })
     $compilerArgs += @($sourceFiles | ForEach-Object { $_.FullName })
+    $compilerArgs += $assemblyInfoPath
     & $mono $compilerArgs
     if ($LASTEXITCODE -ne 0) { throw "Unity Roslyn compile failed with code $LASTEXITCODE" }
 }

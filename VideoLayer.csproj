@@ -8,7 +8,7 @@
     <FrameworkPathOverride>$(BeatSaberDir)\Beat Saber_Data\Managed</FrameworkPathOverride>
     <AssemblyName>VideoLayer</AssemblyName>
     <RootNamespace>VideoLayer</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>tayo-shirosugi</Authors>
     <Description>Displays front and back video layers synchronized with Beat Saber song time and CameraPlus.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

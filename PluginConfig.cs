@@ -27,6 +27,15 @@ namespace VideoLayer
         public virtual string FrontBlendMode { get; set; } = "ChromaKey";
         public virtual string BackBlendMode { get; set; } = "ChromaKey";
 
+        // Keying controls use display RGB values, independent of game color space.
+        public virtual float BlackKeyThreshold { get; set; } = 0.02f;
+        public virtual float BlackKeySoftness { get; set; } = 0.02f;
+        public virtual float BlackKeyWhiteLevel { get; set; } = 1.0f;
+        public virtual string GreenKeyColor { get; set; } = "#00FF00";
+        public virtual float GreenKeyTolerance { get; set; } = 0.03f;
+        public virtual float GreenKeySoftness { get; set; } = 0.03f;
+        public virtual bool GreenKeyEdgeRecovery { get; set; } = true;
+
         // Back is intentionally before normal Transparent(3000), Front is near-overlay.
         public virtual int FrontRenderQueue { get; set; } = 3999;
         public virtual int BackRenderQueue { get; set; } = 2499;
